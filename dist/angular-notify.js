@@ -35,10 +35,8 @@ angular.module('cgNotify', []).factory('notify',['$timeout','$http','$compile','
                     openNotificationsScope[i].$close();
                 }
             }
-
-            $http.get(args.templateUrl,{cache: $templateCache}).then(function(template){
-
-                var templateElement = $compile(template.data)(scope);
+            function successCallback(response) {
+                var templateElement = $compile(response.data)(scope);
                 templateElement.bind('webkitTransitionEnd oTransitionEnd otransitionend transitionend msTransitionEnd', function(e){
                     if (e.propertyName === 'opacity' || e.currentTarget.style.opacity === 0 ||
                         (e.originalEvent && e.originalEvent.propertyName === 'opacity')){
@@ -106,10 +104,13 @@ angular.module('cgNotify', []).factory('notify',['$timeout','$http','$compile','
                         scope.$close();
                     },args.duration);
                 }
+            }
 
-            }).then(function(response){
+            function errorCallback(response) {
                     throw new Error('Template specified for cgNotify ('+args.templateUrl+') could not be loaded. ' + response.data);
-            });
+            }
+
+            $http.get(args.templateUrl,{cache: $templateCache}).then(successCallback(response), errorCallback(response));
 
             var retVal = {};
 
